@@ -1,0 +1,25 @@
+# Array of state codes
+states=(
+  AK AL AR AZ CO CT DC DE GA HI
+  IA ID IL IN KS KY LA MA MD ME
+  MI MN MO MS MT NC ND NE NH NJ
+  NM NV OH OK OR RI SC SD TN UT
+  VA VT WA WI WV WY
+)
+
+PROJECT="pstat-135-235-spring-2025"
+DATASET="voterfile"
+
+for state in "${states[@]}"; do
+  TABLE="${PROJECT}:${DATASET}.${state}"
+
+  # Check if the table exists
+  if bq ls "${PROJECT}:${DATASET}" | awk '{print $1}' | grep -qw "$state"; then
+    # Query row count and extract clean value
+    ROWS=$(bq query --nouse_legacy_sql --format=csv \
+      "SELECT COUNT(*) FROM \`${PROJECT}.${DATASET}.${state}\`" | tail -n 1)
+    echo "$state: $ROWS rows"
+  else
+    echo "$state: Error, unable to count rows"
+  fi
+done
